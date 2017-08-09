@@ -50,7 +50,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return
         }
         
-        let plane = Plane(planeAnchor)
+        let plane = Plane(planeAnchor, planeIsHidden: false)
         node.addChildNode(plane)
         
         // add to dictionary

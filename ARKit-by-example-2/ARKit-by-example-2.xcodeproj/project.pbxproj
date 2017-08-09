@@ -13,7 +13,7 @@
 		049B26C51F3AD67100E8AF30 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 049B26C41F3AD67100E8AF30 /* Assets.xcassets */; };
 		049B26C81F3AD67100E8AF30 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 049B26C61F3AD67100E8AF30 /* LaunchScreen.storyboard */; };
 		049B26D01F3AD84200E8AF30 /* Plane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049B26CF1F3AD84200E8AF30 /* Plane.swift */; };
-		049B26D21F3ADADE00E8AF30 /* tron_grid.png in Resources */ = {isa = PBXBuildFile; fileRef = 049B26D11F3ADADA00E8AF30 /* tron_grid.png */; };
+		049B26D41F3B0F6600E8AF30 /* tron_grid.png in Resources */ = {isa = PBXBuildFile; fileRef = 049B26D11F3ADADA00E8AF30 /* tron_grid.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,7 +128,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				049B26D21F3ADADE00E8AF30 /* tron_grid.png in Resources */,
+				049B26D41F3B0F6600E8AF30 /* tron_grid.png in Resources */,
 				049B26C81F3AD67100E8AF30 /* LaunchScreen.storyboard in Resources */,
 				049B26C51F3AD67100E8AF30 /* Assets.xcassets in Resources */,
 				049B26C31F3AD67100E8AF30 /* Main.storyboard in Resources */,
