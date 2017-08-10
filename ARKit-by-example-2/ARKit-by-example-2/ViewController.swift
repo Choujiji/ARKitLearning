@@ -18,6 +18,7 @@ enum CustomCollisionCategory: Int {
 class ViewController: UIViewController, ARSCNViewDelegate {
     var sceneView: ARSCNView?
     var planes: Dictionary<UUID, Plane> = [:]
+    var boxes: Array<SCNNode> = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,10 +82,20 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // MARK: config gestures
     func addGestures() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(onTapView(_:)))
+        tapGesture.numberOfTapsRequired = 1
         sceneView?.addGestureRecognizer(tapGesture)
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(onLongPressView(_:)))
+        longPressGesture.minimumPressDuration = 1
+        sceneView?.addGestureRecognizer(longPressGesture)
+        
+        let doubleLongPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(onDoubleLongPressView(_:)))
+        doubleLongPressGesture.numberOfTouchesRequired = 2
+        doubleLongPressGesture.minimumPressDuration = 1
+        sceneView?.addGestureRecognizer(doubleLongPressGesture)
     }
     
-    
+    // MARK: single tap
     @objc func onTapView(_ gesture: UITapGestureRecognizer) {
         let tapPoint = gesture.location(in: sceneView!)
         
@@ -110,7 +121,78 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let worldTransform = SCNMatrix4.init(hitTestResult.worldTransform)// 转换成4X4矩阵对象（下标从1开始，c矩阵是下标从0开始）
         boxNode.position = SCNVector3Make(Float(worldTransform.m41), Float(worldTransform.m42) + deltaY, Float(worldTransform.m43))
         sceneView?.scene.rootNode.addChildNode(boxNode)
+        boxes.append(boxNode)
+    }
+    
+    // MARK: long press
+    @objc func onLongPressView(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else {
+            return
+        }
         
+        let point = gesture.location(in: sceneView!)
+        let hitTestResult = sceneView?.hitTest(point, types: .existingPlaneUsingExtent)
+        guard let resultInstance = hitTestResult?.first else {
+            return
+        }
+        // call explode
+        explode(resultInstance)
+    }
+    
+    func explode(_ hitTestResult: ARHitTestResult) {
+        let explodeYOffset: Float = 0.1
+        
+        let worldTransform = SCNMatrix4(hitTestResult.worldTransform)
+        let position = SCNVector3Make(worldTransform.m41,
+                                      worldTransform.m42 + explodeYOffset,
+                                      worldTransform.m43)
+        
+        // loop each geometry node to simulate explode
+        for boxNode in boxes  {
+            // get explode vector
+            let explodeVector = SCNVector3Make(boxNode.worldPosition.x - position.x,
+                                               boxNode.worldPosition.y - position.y,
+                                               boxNode.worldPosition.z - position.z)
+            // get explode distance
+            let distance = sqrtf(explodeVector.x * explodeVector.x + explodeVector.y * explodeVector.y + explodeVector.z * explodeVector.z)
+            
+            let maxDistance: Float = 2
+            
+            // get force scale
+            var scale = max(0, (maxDistance - distance))
+            scale = scale * scale * 2
+            
+            // set force vector(cause force has direction and strength)
+            // explodeVector.x / distance 为每米上面的向量（力） * scale 为比例
+            let forceX = explodeVector.x / distance * scale
+            let forceY = explodeVector.y / distance * scale
+            let forceZ = explodeVector.z / distance * scale
+            
+            let forceVector = SCNVector3Make(forceX, forceY, forceZ)
+            
+            guard let box = boxNode.geometry as? SCNBox else {
+                return
+            }
+            let boxCenterVector = SCNVector3Make(Float(box.width / 2), Float(box.height / 2), Float(box.length / 2))
+            // add force(add to geometry center)
+            boxNode.physicsBody?.applyForce(forceVector, at: boxCenterVector, asImpulse: true)
+        }
+    }
+    
+    // MARK: long double press
+    @objc func onDoubleLongPressView(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else {
+            return
+        }
+        
+        // hide all planes
+        for plane in planes.values {
+            plane.hide()
+        }
+        
+        // stop plane ditection
+        let configuration = ARWorldTrackingConfiguration()
+        sceneView?.session.run(configuration)
     }
 }
 
